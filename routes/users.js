@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.post("/register", async (req, res) => {
   try {
-    const { userName, email, password } = req.body;
+    const { username, email, password } = req.body;
 
     const existingUser = await db().collection("users").findOne({ email });
     if (existingUser) {
@@ -21,17 +21,15 @@ router.post("/register", async (req, res) => {
       return;
     }
 
-    const saltRounds = 5;
+    const saltRounds = 10;
     const salt = await bcrypt.genSalt(saltRounds);
     const passwordHash = await bcrypt.hash(password, salt);
 
     const user = {
       id: uuid(),
-      userName: userName,
+      username: username,
       email: email,
       password: passwordHash,
-
-
     };
 
     const result = await db().collection("users").insertOne(user);
@@ -76,10 +74,10 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign(payload, jwtSecretKey);
 
     const userResponse = {
-        id: user.id,
-        userName: user.userName,
-        email: user.email,
-      };
+      id: user.id,
+      username: user.username,
+      email: user.email,
+    };
 
     res.json({ success: true, token, email, user: userResponse });
   } catch (error) {
@@ -87,6 +85,7 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ error: "An error occurred" });
   }
 });
+
 
 
 
