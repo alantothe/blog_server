@@ -32,9 +32,11 @@ app.use(function(req, res, next) {
 // register the routes here
 var indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
+const postRouter = require('./routes/posts')
 
 app.use('/', indexRouter);
 app.use('/api/user', usersRouter);
+app.use('/api/post', postRouter)
 
 
 server.listen(PORT, () => {
