@@ -39,6 +39,7 @@ app.use('/api/user', usersRouter);
 app.use('/api/post', postRouter)
 
 
+
 server.listen(PORT, () => {
   console.log(`server is running on port ${PORT}`);
 });

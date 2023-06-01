@@ -17,6 +17,7 @@ const storage = multer.diskStorage({
 const upload = multer({storage: storage})
 
 router.post("/create", upload.single('image'), async (req, res) => {
+console.log("POST /create route hit");
   try {
     const { title, content } = req.body;
     const { filename } = req.file; // get the filename of uploaded image
