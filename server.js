@@ -18,6 +18,9 @@ const server = http.createServer(app);
 app.use(express.json());
 app.use(logger('dev'));
 app.use(cors());
+app.use('/uploads', express.static('uploads'));
+
+
 
 
 // Add CORS headers
@@ -37,6 +40,7 @@ const postRouter = require('./routes/posts')
 app.use('/', indexRouter);
 app.use('/api/user', usersRouter);
 app.use('/api/post', postRouter)
+
 
 
 

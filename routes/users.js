@@ -86,6 +86,27 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.get('/:id', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const users = db().collection("users");
+
+    const user = await users.findOne({ id: userId });
+
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+    } else {
+      res.json({ username: user.username, email: user.email, id: user.id }); // Make sure this line is here
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+
+
 
 
 
