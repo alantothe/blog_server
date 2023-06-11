@@ -8,8 +8,8 @@ const mongoose = require("mongoose");
 const http = require("http");
 require("dotenv").config();
 
-const PORT = process.env.API_PORT || 4000;
 
+const PORT = process.env.API_PORT || 4000;
 var { mongoConnect } = require('./mongo.js');
 mongoConnect();
 
@@ -22,15 +22,12 @@ app.use('/uploads', express.static('uploads'));
 
 
 
-
 // Add CORS headers
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
-
-
 
 // register the routes here
 var indexRouter = require('./routes/index');
@@ -40,9 +37,6 @@ const postRouter = require('./routes/posts')
 app.use('/', indexRouter);
 app.use('/api/user', usersRouter);
 app.use('/api/post', postRouter)
-
-
-
 
 server.listen(PORT, () => {
   console.log(`server is running on port ${PORT}`);

@@ -2,29 +2,36 @@ const express = require("express");
 const { v4: uuid } = require("uuid");
 const { db } = require("../mongo");
 const multer = require("multer");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-const router = express.Router();
-
-// Set up multer
-const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    cb(null, 'uploads/')  // Destination folder
-  },
-  filename: function(req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname)  // Filename
-  }
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-const upload = multer({storage: storage})
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'alanblog_photos',
+    format: async (req, file) => 'png', // Convert files to PNG format
+    public_id: (req, file) => file.fieldname + '-' + Date.now(),
+  },
+});
+
+const upload = multer({ storage: storage });
+const router = express.Router();
 
 router.post("/create", upload.single('image'), async (req, res) => {
   try {
     const { title, content, username } = req.body;
-    const { filename } = req.file; // get the filename of uploaded image
+    const imageUrl = req.file.path;
 
     const post = {
       id: uuid(),
       title: title,
-      image: filename,
+      image: imageUrl,
       content: content,
       username: username,
       createdAt: new Date(),
@@ -40,15 +47,18 @@ router.post("/create", upload.single('image'), async (req, res) => {
   }
 });
 
+
+
 router.get("/all", async (req, res) => {
   try {
-    const posts = await db().collection("posts").find().toArray();
+    const posts = await db().collection("posts").find().sort({ createdAt: -1 }).toArray();
     res.json(posts);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "An error occurred while retrieving posts" });
   }
 });
+
 
 router.get("/:id", async (req, res) => {
   try {
@@ -66,14 +76,15 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ error: "An error occurred while retrieving the post" });
   }
 });
+
 router.put("/edit/:id", upload.single('image'), async (req, res) => {
   try {
     const id = req.params.id;
 
-    // Fetch the existing post first
+    // grab the existing post first
     const existingPost = await db().collection("posts").findOne({ id: id });
 
-    // If there is no post with the provided ID, return an error
+
     if (!existingPost) {
       return res.status(404).json({ error: "No post found with this ID to update" });
     }
@@ -81,13 +92,12 @@ router.put("/edit/:id", upload.single('image'), async (req, res) => {
     const updatedPost = {
       title: req.body.title,
       content: req.body.content,
-      // Keep the existing username
       username: existingPost.username,
       updatedAt: new Date(),
     };
 
     if(req.file) {
-      updatedPost.image = req.file.filename;  // Only update image if new image was provided
+      updatedPost.image = req.file.path;  // Only update image if new image was provided
     }
 
     const result = await db().collection("posts").updateOne({ id: id }, { $set: updatedPost });
@@ -102,6 +112,7 @@ router.put("/edit/:id", upload.single('image'), async (req, res) => {
     res.status(500).json({ error: "An error occurred while updating the post" });
   }
 });
+
 
 router.delete("/:id", async (req, res) => {
   try {
